@@ -7,6 +7,7 @@ import { Router } from '../common/router'
 import { mergePatchBodyParser } from './merge-patch.parser'
 import { handleError } from './error.handler'
 import { tokenParser } from '../security/token.parser'
+import corsMiddleware from 'restify-cors-middleware'
 
 export class Server {
 
@@ -38,7 +39,18 @@ export class Server {
 
                 this.application = restify.createServer(options)
 
-                //necessary because of restify limitations
+                const corsOptions: corsMiddleware.Options = {
+                    preflightMaxAge: 10,
+                    origins: ['*'],
+                    allowHeaders: ['authorization'],
+                    exposeHeaders: ['x-custom-header']
+                }
+
+                const cors: corsMiddleware.CorsMiddleware = corsMiddleware(corsOptions)
+
+                this.application.pre(cors.preflight)
+
+                this.application.use(cors.actual)
                 this.application.use(restify.plugins.queryParser())
                 this.application.use(restify.plugins.bodyParser())
                 this.application.use(mergePatchBodyParser)

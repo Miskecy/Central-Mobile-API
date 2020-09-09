@@ -658,6 +658,14 @@
   resolved "https://registry.yarnpkg.com/@types/prettier/-/prettier-2.1.0.tgz#5f96562c1075ee715a5b138f0b7f591c1f40f6b8"
   integrity sha512-hiYA88aHiEIgDmeKlsyVsuQdcFn3Z2VuFd/Xm/HCnGnPD8UFU5BM128uzzRVVGEzKDKYUrRsRH9S2o+NUy/3IA==
 
+"@types/restify-cors-middleware@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@types/restify-cors-middleware/-/restify-cors-middleware-1.0.1.tgz#6c230c53a419eb3af83eeaabbcbc4771f25299e9"
+  integrity sha512-+S/FClLh8Wnw970RYEJ2OmdZDFwOR2GCf2hGqaB+fLdX3pRFb7WYJJHh6jN7Lrw2GiZ6LfybwgANExEC64x+Cg==
+  dependencies:
+    "@types/node" "*"
+    "@types/restify" "*"
+
 "@types/restify-errors@^4.3.3":
   version "4.3.3"
   resolved "https://registry.yarnpkg.com/@types/restify-errors/-/restify-errors-4.3.3.tgz#2ae7d7e3f7cbf2117267d56daa8cf37ac113ba77"
@@ -665,7 +673,7 @@
   dependencies:
     "@types/verror" "*"
 
-"@types/restify@^8.4.2":
+"@types/restify@*", "@types/restify@^8.4.2":
   version "8.4.2"
   resolved "https://registry.yarnpkg.com/@types/restify/-/restify-8.4.2.tgz#f071d971d10ad79f6073dfbbeed7729d68760e7f"
   integrity sha512-jdXB0IrsigqMccBMs3a2kBUUAlYTbjLCbfC63sI00rwTXc+B4UQniGkAJCGS27CAxwkJFAFXzpk0msOQtQ1RXA==
@@ -4346,6 +4354,13 @@ responselike@^1.0.2:
   integrity sha1-kYcg7ztjHFZCvgaPFa3lpG9Loec=
   dependencies:
     lowercase-keys "^1.0.0"
+
+restify-cors-middleware@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/restify-cors-middleware/-/restify-cors-middleware-1.1.1.tgz#06688502fa08b8c62783103844c87dcfc30dcf3e"
+  integrity sha1-BmiFAvoIuMYngxA4RMh9z8MNzz4=
+  dependencies:
+    assert-plus "^1.0.0"
 
 restify-errors@^8.0.2:
   version "8.0.2"
