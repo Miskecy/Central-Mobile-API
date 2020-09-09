@@ -3,6 +3,7 @@ import mongoose from "mongoose"
 import { environment } from "../common/environment"
 import { Router } from "../common/router"
 import { mergePatchBodyParser } from "./merge-patch.parser"
+import { handleError } from './error.handler'
 
 export class Server {
     application?: restify.Server
@@ -37,16 +38,19 @@ export class Server {
 
                 this.application.listen(environment.server.port, () => {
                     resolve(this.application)
-                });
+                })
+
+                this.application.on('restifyError', handleError)
+
             } catch (error) {
                 reject(error)
             }
-        });
+        })
     }
 
     bootstrap(routers: Router[] = []): Promise<Server> {
         return this.initializeDb().then(() =>
             this.initRoutes(routers).then(() => this)
-        );
+        )
     }
 }

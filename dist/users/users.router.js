@@ -15,6 +15,7 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.usersRouter = void 0;
 var router_1 = require("../common/router");
+var restify_errors_1 = require("restify-errors");
 var users_model_1 = require("./users.model");
 var UsersRouter = /** @class */ (function (_super) {
     __extends(UsersRouter, _super);
@@ -29,32 +30,39 @@ var UsersRouter = /** @class */ (function (_super) {
     UsersRouter.prototype.applyRoutes = function (application) {
         var _this = this;
         application.get('/users', function (req, resp, next) {
-            users_model_1.User.find().then(_this.render(resp, next));
+            users_model_1.User.find()
+                .then(_this.render(resp, next))
+                .catch(next);
         });
         application.get('/users/:id', function (req, resp, next) {
             users_model_1.User.findById(req.params.id)
-                .then(_this.render(resp, next));
+                .then(_this.render(resp, next))
+                .catch(next);
         });
         application.post('/users', function (req, resp, next) {
             var user = new users_model_1.User(req.body);
-            user.save().then(_this.render(resp, next));
+            user.save()
+                .then(_this.render(resp, next))
+                .catch(next);
         });
         application.put('/users/:id', function (req, resp, next) {
-            var options = { overwrite: true };
+            var options = { runValidators: true, overwrite: true };
             users_model_1.User.update({ _id: req.params.id }, req.body, options)
                 .exec().then(function (result) {
                 if (result.n) {
                     return users_model_1.User.findById(req.params.id);
                 }
                 else {
-                    resp.send(404);
+                    throw new restify_errors_1.NotFoundError('Documento não encontrado');
                 }
-            }).then(_this.render(resp, next));
+            }).then(_this.render(resp, next))
+                .catch(next);
         });
         application.patch('/users/:id', function (req, resp, next) {
-            var options = { new: true };
+            var options = { runValidators: true, new: true };
             users_model_1.User.findByIdAndUpdate(req.params.id, req.body, options)
-                .then(_this.render(resp, next));
+                .then(_this.render(resp, next))
+                .catch(next);
         });
         application.del('/users/:id', function (req, resp, next) {
             users_model_1.User.remove({ _id: req.params.id }).exec().then(function (cmdResult) {
@@ -62,10 +70,10 @@ var UsersRouter = /** @class */ (function (_super) {
                     resp.send(204);
                 }
                 else {
-                    resp.send(404);
+                    throw new restify_errors_1.NotFoundError('Documento não encontrado');
                 }
                 return next();
-            });
+            }).catch(next);
         });
     };
     return UsersRouter;

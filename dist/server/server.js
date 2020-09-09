@@ -27,6 +27,7 @@ var restify = __importStar(require("restify"));
 var mongoose_1 = __importDefault(require("mongoose"));
 var environment_1 = require("../common/environment");
 var merge_patch_parser_1 = require("./merge-patch.parser");
+var error_handler_1 = require("./error.handler");
 var Server = /** @class */ (function () {
     function Server() {
     }
@@ -59,6 +60,7 @@ var Server = /** @class */ (function () {
                 _this.application.listen(environment_1.environment.server.port, function () {
                     resolve(_this.application);
                 });
+                _this.application.on('restifyError', error_handler_1.handleError);
             }
             catch (error) {
                 reject(error);
