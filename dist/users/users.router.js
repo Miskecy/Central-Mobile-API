@@ -19,22 +19,51 @@ var users_model_1 = require("./users.model");
 var UsersRouter = /** @class */ (function (_super) {
     __extends(UsersRouter, _super);
     function UsersRouter() {
-        return _super !== null && _super.apply(this, arguments) || this;
+        var _this = _super.call(this) || this;
+        _this.on('beforeRender', function (document) {
+            document.password = undefined;
+            //delete document.password
+        });
+        return _this;
     }
     UsersRouter.prototype.applyRoutes = function (application) {
+        var _this = this;
         application.get('/users', function (req, resp, next) {
-            users_model_1.User.findAll().then(function (users) {
-                resp.json(users);
-                return next();
-            });
+            users_model_1.User.find().then(_this.render(resp, next));
         });
         application.get('/users/:id', function (req, resp, next) {
-            users_model_1.User.findById(req.params.id).then(function (user) {
-                if (user) {
-                    resp.json(user);
-                    return next();
+            users_model_1.User.findById(req.params.id)
+                .then(_this.render(resp, next));
+        });
+        application.post('/users', function (req, resp, next) {
+            var user = new users_model_1.User(req.body);
+            user.save().then(_this.render(resp, next));
+        });
+        application.put('/users/:id', function (req, resp, next) {
+            var options = { overwrite: true };
+            users_model_1.User.update({ _id: req.params.id }, req.body, options)
+                .exec().then(function (result) {
+                if (result.n) {
+                    return users_model_1.User.findById(req.params.id);
                 }
-                resp.send(404);
+                else {
+                    resp.send(404);
+                }
+            }).then(_this.render(resp, next));
+        });
+        application.patch('/users/:id', function (req, resp, next) {
+            var options = { new: true };
+            users_model_1.User.findByIdAndUpdate(req.params.id, req.body, options)
+                .then(_this.render(resp, next));
+        });
+        application.del('/users/:id', function (req, resp, next) {
+            users_model_1.User.remove({ _id: req.params.id }).exec().then(function (cmdResult) {
+                if (cmdResult.result.n) {
+                    resp.send(204);
+                }
+                else {
+                    resp.send(404);
+                }
                 return next();
             });
         });

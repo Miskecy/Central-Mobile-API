@@ -18,22 +18,39 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Server = void 0;
 var restify = __importStar(require("restify"));
+var mongoose_1 = __importDefault(require("mongoose"));
 var environment_1 = require("../common/environment");
+var merge_patch_parser_1 = require("./merge-patch.parser");
 var Server = /** @class */ (function () {
     function Server() {
     }
+    Server.prototype.initializeDb = function () {
+        mongoose_1.default.Promise = global.Promise;
+        return mongoose_1.default.connect(environment_1.environment.db.url, {
+            //useMongoClient: true, //The `useMongoClient` option is no longer necessary in mongoose 5.x
+            useUnifiedTopology: true,
+            useNewUrlParser: true,
+            useFindAndModify: false,
+            useCreateIndex: true
+        });
+    };
     Server.prototype.initRoutes = function (routers) {
         var _this = this;
         return new Promise(function (resolve, reject) {
             try {
                 _this.application = restify.createServer({
-                    name: 'central-mobile-api',
-                    version: '1.0.0'
+                    name: "meat-api",
+                    version: "1.0.0",
                 });
                 _this.application.use(restify.plugins.queryParser());
+                _this.application.use(restify.plugins.bodyParser());
+                _this.application.use(merge_patch_parser_1.mergePatchBodyParser);
                 //routes
                 for (var _i = 0, routers_1 = routers; _i < routers_1.length; _i++) {
                     var router = routers_1[_i];
@@ -51,7 +68,9 @@ var Server = /** @class */ (function () {
     Server.prototype.bootstrap = function (routers) {
         var _this = this;
         if (routers === void 0) { routers = []; }
-        return this.initRoutes(routers).then(function () { return _this; });
+        return this.initializeDb().then(function () {
+            return _this.initRoutes(routers).then(function () { return _this; });
+        });
     };
     return Server;
 }());
