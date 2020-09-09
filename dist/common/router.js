@@ -34,6 +34,20 @@ var Router = /** @class */ (function (_super) {
             return next();
         };
     };
+    Router.prototype.renderAll = function (response, next) {
+        var _this = this;
+        return function (documents) {
+            if (documents) {
+                documents.forEach(function (document) {
+                    _this.emit('beforeRender', document);
+                });
+                response.json(documents);
+            }
+            else {
+                response.json([]);
+            }
+        };
+    };
     return Router;
 }(events_1.EventEmitter));
 exports.Router = Router;
