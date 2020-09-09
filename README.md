@@ -26,7 +26,7 @@ Todo o projeto foi baseado em boas práticas, utilizando as novidades atuais do 
 
 * Clone o repositório
 ```
-yarn test
+git clone https://github.com/Miskecy/Central-Mobile-API.git
 ```
 * Rode o yarn
 ```
