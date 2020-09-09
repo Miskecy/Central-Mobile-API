@@ -27,7 +27,7 @@ export class Server {
         return new Promise((resolve, reject) => {
             try {
                 const options: restify.ServerOptions = {
-                    name: 'my-api',
+                    name: 'central-mobile-api',
                     version: '1.0.0'
                 }
 
@@ -60,6 +60,7 @@ export class Server {
             }
         })
     }
+    
     bootstrap(routers: Router[] = []): Promise<Server> {
         return this.initializeDb().then(() => this.initRoutes(routers).then(() => this))
     }

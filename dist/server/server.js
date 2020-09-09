@@ -48,7 +48,7 @@ var Server = /** @class */ (function () {
         return new Promise(function (resolve, reject) {
             try {
                 var options = {
-                    name: 'my-api',
+                    name: 'central-mobile-api',
                     version: '1.0.0'
                 };
                 if (environment_1.environment.security.enableHTTPS) {
