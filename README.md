@@ -119,7 +119,7 @@ Agora com o usuário cujo id é 5f58787e1e65d1243cadfb44, possui privilegios de 
 ```
 POST: http://localhost:3000/users/authenticate
 
-//Alterando os dados do usuário com id 5f58787e1e65d1243cadfb44
+//Logando o usuário modificado
 {
   "email": "miskecysss@gmail.com",
   "password": "123456"
