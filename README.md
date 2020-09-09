@@ -35,7 +35,9 @@ Todo o projeto foi baseado em boas práticas, utilizando as novidades atuais do 
 ```
 yarn test
 ```
-![](doc/yarn-test.gif)
+<p align="center">
+  <img width="600" height="533" src="doc/yarn-test.gif">
+</p>
 
 ## Help
 
