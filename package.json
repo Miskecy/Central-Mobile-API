@@ -4,7 +4,11 @@
   "main": "src/main.js",
   "scripts": {
     "test": "ts-node src/jest.startup.ts",
-    "dev": "ts-node-dev --respawn --transpile-only src/main.ts"
+    "dev": "ts-node-dev --respawn --transpile-only src/main.ts",
+    "prod-start": "pm2 start ecosystem.config.js",
+    "prod-reload": "pm2 reload ecosystem.config.js",
+    "prod-restart": "pm2 restart ecosystem.config.js",
+    "prod-stop": "pm2 stop ecosystem.config.js"
   },
   "author": "Kecy Jones <miskecysss@gmail.com>",
   "license": "ISC",
@@ -31,6 +35,7 @@
     "bcrypt": "^5.0.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.10.3",
+    "pm2": "^4.4.1",
     "restify": "^8.5.1",
     "restify-cors-middleware": "^1.1.1",
     "restify-errors": "^8.0.2"
