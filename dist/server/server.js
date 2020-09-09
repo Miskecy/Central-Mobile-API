@@ -30,6 +30,8 @@ var environment_1 = require("../common/environment");
 var merge_patch_parser_1 = require("./merge-patch.parser");
 var error_handler_1 = require("./error.handler");
 var token_parser_1 = require("../security/token.parser");
+var restify_cors_middleware_1 = __importDefault(require("restify-cors-middleware"));
+var logger_1 = require("../common/logger");
 var Server = /** @class */ (function () {
     function Server() {
     }
@@ -49,14 +51,26 @@ var Server = /** @class */ (function () {
             try {
                 var options = {
                     name: 'central-mobile-api',
-                    version: '1.0.0'
+                    version: '1.0.0',
+                    log: logger_1.logger
                 };
                 if (environment_1.environment.security.enableHTTPS) {
                     options.certificate = fs.readFileSync(environment_1.environment.security.certificate);
                     options.key = fs.readFileSync(environment_1.environment.security.key);
                 }
                 _this.application = restify.createServer(options);
-                //necessary because of restify limitations
+                var corsOptions = {
+                    preflightMaxAge: 10,
+                    origins: ['*'],
+                    allowHeaders: ['authorization'],
+                    exposeHeaders: ['x-custom-header']
+                };
+                var cors = restify_cors_middleware_1.default(corsOptions);
+                _this.application.pre(cors.preflight);
+                _this.application.pre(restify.plugins.requestLogger({
+                    log: logger_1.logger
+                }));
+                _this.application.use(cors.actual);
                 _this.application.use(restify.plugins.queryParser());
                 _this.application.use(restify.plugins.bodyParser());
                 _this.application.use(merge_patch_parser_1.mergePatchBodyParser);

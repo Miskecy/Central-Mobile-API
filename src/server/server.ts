@@ -7,6 +7,8 @@ import { Router } from '../common/router'
 import { mergePatchBodyParser } from './merge-patch.parser'
 import { handleError } from './error.handler'
 import { tokenParser } from '../security/token.parser'
+import corsMiddleware from 'restify-cors-middleware'
+import { logger } from '../common/logger'
 
 export class Server {
 
@@ -28,7 +30,8 @@ export class Server {
             try {
                 const options: restify.ServerOptions = {
                     name: 'central-mobile-api',
-                    version: '1.0.0'
+                    version: '1.0.0',
+                    log: logger
                 }
 
                 if (environment.security.enableHTTPS) {
@@ -38,7 +41,21 @@ export class Server {
 
                 this.application = restify.createServer(options)
 
-                //necessary because of restify limitations
+                const corsOptions: corsMiddleware.Options = {
+                    preflightMaxAge: 10,
+                    origins: ['*'],
+                    allowHeaders: ['authorization'],
+                    exposeHeaders: ['x-custom-header']
+                }
+
+                const cors: corsMiddleware.CorsMiddleware = corsMiddleware(corsOptions)
+
+                this.application.pre(cors.preflight)
+                this.application.pre(restify.plugins.requestLogger({
+                    log: logger
+                }))
+
+                this.application.use(cors.actual)
                 this.application.use(restify.plugins.queryParser())
                 this.application.use(restify.plugins.bodyParser())
                 this.application.use(mergePatchBodyParser)
