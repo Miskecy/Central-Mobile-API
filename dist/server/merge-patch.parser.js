@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mergePatchBodyParser = void 0;
 var mpContentType = 'application/merge-patch+json';
-exports.mergePatchBodyParser = function (req, resp, next) {
+exports.mergePatchBodyParser = function (req, res, next) {
     if (req.getContentType() === mpContentType && req.method === 'PATCH') {
         req.rawBody = req.body;
         try {

@@ -2,7 +2,7 @@ import * as restify from 'restify'
 
 const mpContentType = 'application/merge-patch+json'
 
-export const mergePatchBodyParser = (req: restify.Request, resp: restify.Response, next: restify.Next) => {
+export const mergePatchBodyParser: restify.RequestHandler = (req, res, next) => {
     if (req.getContentType() === mpContentType && req.method === 'PATCH') {
         (<any>req).rawBody = req.body
         try {

@@ -13,7 +13,7 @@ class UsersRouter extends ModelRouter<User> {
         })
     }
 
-    findByEmail = (req: restify.Request, res: restify.Response, next: restify.Next) => {
+    findByEmail: restify.RequestHandler = (req, res, next) => {
         if (req.query.email) {
             User.findByEmail(req.query.email).then(user => {
                 if (user) {

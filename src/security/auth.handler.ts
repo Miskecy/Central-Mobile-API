@@ -5,11 +5,11 @@ import { environment } from '../common/environment'
 import { User } from '../users/users.model'
 
 export const authenticate: restify.RequestHandler = (req, res, next) => {
-    const {email, password} = req.body
+    const { email, password } = req.body
     User.findByEmail(email, '+password').then(user => {
-        if(user && user.matches(password)) {
-            const token = jwt.sign({sub: user.email, iss: 'my-app'}, environment.security.apiSecret)
-            res.json({name: user.name, email: user.email, accessToken: token})
+        if (user && user.matches(password)) {
+            const token = jwt.sign({ sub: user.email, iss: 'Central-Mobile' }, environment.security.apiSecret)
+            res.json({ name: user.name, email: user.email, accessToken: token })
             return next(false)
         } else {
             return next(new NotAuthorizedError('Invalid Credentials'))
