@@ -24,9 +24,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = void 0;
 var mongoose_1 = __importDefault(require("mongoose"));
-var helpers_1 = require("../common/helpers");
 var bcrypt = __importStar(require("bcrypt"));
 var environment_1 = require("../common/environment");
+var helpers_1 = require("../common/helpers");
 var userSchema = new mongoose_1.default.Schema({
     name: {
         type: String,
@@ -48,7 +48,7 @@ var userSchema = new mongoose_1.default.Schema({
     gender: {
         type: String,
         required: false,
-        enum: ['Male', 'Female']
+        enum: ['Female', 'Male']
     },
     cpf: {
         type: String,
@@ -57,11 +57,28 @@ var userSchema = new mongoose_1.default.Schema({
             validator: helpers_1.validateCPF,
             message: '{PATH}: Invalid CPF ({VALUE})'
         }
+    },
+    profiles: {
+        type: [String],
+        required: false
     }
 });
+userSchema.statics.findByEmail = function (email, projection) {
+    return this.findOne({ email: email }, projection); // {email: email}
+};
+userSchema.methods.matches = function (password) {
+    return bcrypt.compareSync(password, this.password);
+};
+userSchema.methods.hasAny = function () {
+    var _this = this;
+    var profiles = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        profiles[_i] = arguments[_i];
+    }
+    return profiles.some(function (profile) { return _this.profiles.indexOf(profile) !== -1; });
+};
 var hashPassword = function (target, next) {
-    bcrypt.hash(target.password, environment_1.environment.security.saltRounds)
-        .then(function (hash) {
+    bcrypt.hash(target.password, environment_1.environment.security.saltRounds).then(function (hash) {
         target.password = hash;
         next();
     }).catch(next);

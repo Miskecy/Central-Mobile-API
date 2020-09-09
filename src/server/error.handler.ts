@@ -24,7 +24,7 @@ export const handleError = (req: restify.Request, res: restify.Response, e: any,
                 }
 
                 e.errors = messages
-
+                
                 console.log('ValidationError')
                 break
         }

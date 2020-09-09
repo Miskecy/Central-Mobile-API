@@ -1,19 +1,53 @@
-import * as restify from 'restify'
-import * as mongoose from 'mongoose'
 import { Router } from './router'
+import { Request, Response, Next } from 'restify'
+import mongoose from 'mongoose'
 import { NotFoundError } from 'restify-errors'
 
-
 export abstract class ModelRouter<D extends mongoose.Document> extends Router {
+
+    basePath: string
+    pageSize: number = 4
+
     constructor(protected model: mongoose.Model<D>) {
         super()
+        this.basePath = `/${model.collection.name}`
     }
+
+    // protected prepareOne(query: mongoose.DocumentQuery<D[], D>): mongoose.DocumentQuery<D[], D> {
+    //     return query
+    // }
 
     protected prepareOne(query: mongoose.DocumentQuery<D, D>): mongoose.DocumentQuery<D, D> {
         return query
     }
 
-    validateId: restify.RequestHandlerType = (req, resp, next) => {
+    envelope(document: any): any {
+        let resource = Object.assign({ _links: {} }, document.toJSON())
+        resource._links.self = `${this.basePath}/${resource._id}`
+        return resource
+    }
+
+    envelopeAll(documents: any[], options: any = {}): any {
+        const resource: any = {
+            _links: {
+                self: `${options.url}`
+            },
+            items: documents
+        }
+        if (options.page && options.countDocuments && options.pageSize) {
+            if (options.page > 1) {
+                resource._links.previous = `${this.basePath}?_page=${options.page - 1}`
+            }
+            const remaining = options.countDocuments - (options.page * options.pageSize)
+            if (remaining > 0) {
+                resource._links.next = `${this.basePath}?_page=${options.page + 1}`
+            }
+
+        }
+        return resource
+    }
+
+    validateId = (req: Request, res: Response, next: Next) => {
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
             next(new NotFoundError('Document not found'))
         } else {
@@ -21,54 +55,57 @@ export abstract class ModelRouter<D extends mongoose.Document> extends Router {
         }
     }
 
-    findAll: restify.RequestHandlerType = (req, resp, next) => {
-        this.model.find()
-            .then(this.renderAll(resp, next))
+    findAll = (req: Request, res: Response, next: Next) => {
+        let page = parseInt(req.query._page || 1)
+        page = page > 0 ? page : 1
+        const skip = (page - 1) * this.pageSize
+        this.model.countDocuments({}).exec().then(
+            count => this.model
+                .find()
+                .skip(skip)
+                .limit(this.pageSize)
+                .then(this.renderAll(res, next, { page, count, pageSize: this.pageSize, url: req.url })))
             .catch(next)
     }
-
-    findById: restify.RequestHandlerType = (req, resp, next) => {
-        this.prepareOne((<any>this).model.findById(req.params.id))
-            .then(this.render(resp, next))
-            .catch(next)
+    //this.model.findById(req.params.id)
+    findById = (req: Request, res: Response, next: Next) => {
+        this.prepareOne((this.model.findById(req.params.id) as mongoose.DocumentQuery<D, D>)).then(this.render(res, next)).catch(next)
     }
 
-    save: restify.RequestHandlerType = (req, resp, next) => {
+    save = (req: Request, res: Response, next: Next) => {
         let document = new this.model(req.body)
-        document.save()
-            .then(this.render(resp, next))
-            .catch(next)
+        //user.name = req.body.name
+        //user.email = req.body.email
+        document.save().then(this.render(res, next)).catch(next)
     }
 
-    replace: restify.RequestHandlerType = (req, resp, next) => {
-        const options = { runValidators: true, overwrite: true }
-        this.model.update({ _id: req.params.id }, req.body, options)
-            .exec().then(result => {
-                if (result.n) {
-                    return this.prepareOne((<any>this).model.findById(req.params.id))
-                } else {
-                    throw new NotFoundError('Documento não encontrado')
-                }
-            }).then(this.render(resp, next))
-            .catch(next)
+    replace = (req: Request, res: Response, next: Next) => {
+        const options = {
+            runValidators: true,
+            overwrite: true
+        }
+        this.model.replaceOne({ _id: req.params.id }, req.body).exec().then(result => {
+            if (result.n) {
+                return this.model.findById(req.params.id)
+            } else {
+                throw new NotFoundError('Documento não encontrado')
+            }
+        }).then(this.render(res, next)).catch(next)
     }
 
-    update: restify.RequestHandlerType = (req, resp, next) => {
+    update = (req: Request, res: Response, next: Next) => {
         const options = { runValidators: true, new: true }
-        this.model.findByIdAndUpdate(req.params.id, req.body, options)
-            .then(this.render(resp, next))
-            .catch(next)
+        this.model.findByIdAndUpdate(req.params.id, req.body, options).then(this.render(res, next)).catch(next)
     }
 
-    delete: restify.RequestHandlerType = (req, resp, next) => {
-        this.model.remove({ _id: req.params.id }).exec().then((cmdResult: any) => {
-            if (cmdResult.result.n) {
-                resp.send(204)
+    delete = (req: Request, res: Response, next: Next) => {
+        this.model.deleteOne({ _id: req.params.id }).exec().then((cmdResult: any) => {
+            if (cmdResult.n) {
+                res.send(204)
             } else {
                 throw new NotFoundError('Documento não encontrado')
             }
             return next()
         }).catch(next)
     }
-
 }

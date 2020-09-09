@@ -23,11 +23,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Server = void 0;
+var fs = __importStar(require("fs"));
 var restify = __importStar(require("restify"));
 var mongoose_1 = __importDefault(require("mongoose"));
 var environment_1 = require("../common/environment");
 var merge_patch_parser_1 = require("./merge-patch.parser");
 var error_handler_1 = require("./error.handler");
+var token_parser_1 = require("../security/token.parser");
 var Server = /** @class */ (function () {
     function Server() {
     }
@@ -45,14 +47,21 @@ var Server = /** @class */ (function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
             try {
-                _this.application = restify.createServer({
-                    name: "meat-api",
-                    version: "1.0.0",
-                });
+                var options = {
+                    name: 'my-api',
+                    version: '1.0.0'
+                };
+                if (environment_1.environment.security.enableHTTPS) {
+                    options.certificate = fs.readFileSync(environment_1.environment.security.certificate);
+                    options.key = fs.readFileSync(environment_1.environment.security.key);
+                }
+                _this.application = restify.createServer(options);
+                //necessary because of restify limitations
                 _this.application.use(restify.plugins.queryParser());
                 _this.application.use(restify.plugins.bodyParser());
                 _this.application.use(merge_patch_parser_1.mergePatchBodyParser);
-                //routes
+                _this.application.use(token_parser_1.tokenParser); //auth
+                //routes 
                 for (var _i = 0, routers_1 = routers; _i < routers_1.length; _i++) {
                     var router = routers_1[_i];
                     router.applyRoutes(_this.application);
@@ -62,17 +71,19 @@ var Server = /** @class */ (function () {
                 });
                 _this.application.on('restifyError', error_handler_1.handleError);
             }
-            catch (error) {
-                reject(error);
+            catch (e) {
+                reject(e);
             }
         });
     };
     Server.prototype.bootstrap = function (routers) {
         var _this = this;
         if (routers === void 0) { routers = []; }
-        return this.initializeDb().then(function () {
-            return _this.initRoutes(routers).then(function () { return _this; });
-        });
+        return this.initializeDb().then(function () { return _this.initRoutes(routers).then(function () { return _this; }); });
+    };
+    Server.prototype.shutdown = function () {
+        var _this = this;
+        return mongoose_1.default.disconnect().then(function () { var _a; return (_a = _this.application) === null || _a === void 0 ? void 0 : _a.close(); });
     };
     return Server;
 }());

@@ -21,31 +21,41 @@ var Router = /** @class */ (function (_super) {
     function Router() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    Router.prototype.render = function (response, next) {
+    Router.prototype.envelope = function (document) {
+        return document;
+    };
+    Router.prototype.envelopeAll = function (documents, options) {
+        if (options === void 0) { options = {}; }
+        return documents;
+    };
+    Router.prototype.render = function (res, next) {
         var _this = this;
         return function (document) {
             if (document) {
                 _this.emit('beforeRender', document);
-                response.json(document);
+                res.json(_this.envelope(document));
             }
             else {
                 throw new restify_errors_1.NotFoundError('Documento não encontrado');
             }
-            return next();
+            return next(false);
         };
     };
-    Router.prototype.renderAll = function (response, next) {
+    Router.prototype.renderAll = function (res, next, options) {
         var _this = this;
+        if (options === void 0) { options = {}; }
         return function (documents) {
             if (documents) {
-                documents.forEach(function (document) {
+                documents.forEach(function (document, index, array) {
                     _this.emit('beforeRender', document);
+                    array[index] = _this.envelope(document);
                 });
-                response.json(documents);
+                res.json(_this.envelopeAll(documents, options));
             }
             else {
-                response.json([]);
+                res.json(_this.envelopeAll([]));
             }
+            return next(false);
         };
     };
     return Router;
