@@ -11,7 +11,7 @@
     "prod-stop": "pm2 stop ecosystem.config.js"
   },
   "author": "Kecy Jones <miskecysss@gmail.com>",
-  "license": "ISC",
+  "license": "GNU GPLv3",
   "jest": {
     "globals": {
       "address": "http://localhost:3001",
